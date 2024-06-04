@@ -1,0 +1,61 @@
+@page "/send"
+@implements IAsyncDisposable
+
+<PageTitle>Send</PageTitle>
+
+<h1>Send</h1>
+
+<p>Cliente enviando mensagem para o servidor!</p>
+
+<div class="mb-3">
+    <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="@AppState.Monitoring.ToString()" aria-valuemin="0" aria-valuemax="100" style="height: 35px">
+        <div class="progress-bar" style="width: @AppState.Monitoring.ToString()%">@AppState.Monitoring.ToString()%</div>
+    </div>
+</div>
+<div class="d-grid gap-2 d-md-block">
+    <button type="button" class="btn btn-primary" @onclick="IncrementCount">Enviar</button>
+    <button type="button" class="btn btn-secondary" @onclick="Reset">Reiniciar</button>
+</div>
+
+@code {
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(AppState.URL_SIGNALR)
+            .WithAutomaticReconnect()
+            .Build();
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task SendAsync()
+    {
+        if (hubConnection is not null)
+            await hubConnection.SendAsync(AppState.SEND_MONITORING, AppState.Monitoring);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+            await hubConnection.DisposeAsync();
+    }
+
+    private async void IncrementCount()
+    {
+        if (AppState.Monitoring >= 100)
+            return;
+
+        AppState.Monitoring += 25;
+
+        await SendAsync();
+    }
+
+    private async void Reset()
+    {
+        AppState.Monitoring = 0;
+
+        await SendAsync();
+    }
+}

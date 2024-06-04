@@ -1,0 +1,54 @@
+@page "/receive"
+@implements IAsyncDisposable
+
+<PageTitle>Receive</PageTitle>
+
+<h1>Receive</h1>
+
+<p>Cliente recebendo mensagem do servidor!
+    @switch (AppState.Monitoring)
+    {
+        case <= 0:
+            <span class="badge text-bg-primary">@AppState.Monitoring.ToString()%</span>
+            break;
+
+        case > 75:
+            <span class="badge text-bg-danger">@AppState.Monitoring.ToString()%</span>
+            break;
+
+        case > 25:
+            <span class="badge text-bg-warning">@AppState.Monitoring.ToString()%</span>
+            break;
+
+        default:
+            <span class="badge text-bg-success">@AppState.Monitoring.ToString()%</span>
+            break;
+    }
+</p>
+
+@code {
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(AppState.URL_SIGNALR)
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<int>(AppState.RECEIVE_MONITORING, (monitoring) =>
+        {
+            AppState.Monitoring = monitoring;
+            
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+            await hubConnection.DisposeAsync();
+    }
+}
