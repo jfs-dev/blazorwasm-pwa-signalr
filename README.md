@@ -25,5 +25,7 @@ Projeto cliente integrado com o projeto servidor **minimal-api-signalr**, usando
 ## Referências
 https://learn.microsoft.com/pt-br/aspnet/core/blazor/tutorials/signalr-blazor?view=aspnetcore-8.0&tabs=visual-studio
 
+https://getbootstrap.com/
+
 ## Licença
 GPL-3.0 license
